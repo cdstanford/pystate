@@ -20,6 +20,8 @@ SHIFT_BCK1 = 0b10000010011000001000111011011011
 SHIFT_FWD8 = 0b00000000000000000000000100000000
 SHIFT_BCK8 = 0b10101001110100111110011010100110
 
+SHIFT_BCK_32 = 0xcbf1acda
+
 """
 Polynomial arithmetic (on 32-bit values)
 """
@@ -43,12 +45,18 @@ def crc_mul(x, y):
 """
 CRC32 calculation
 """
+def rev_bits(x, width=32):
+    # Reverse-bits function
+    x_bin = bin(x)[2:].zfill(width)
+    x_bin_rev = ''.join(reversed(x_bin))
+    return int(x_bin_rev, 2)
+
 def crc(x, init=0):
     result = init ^ MAX_32
     for byte in x:
-        result ^= byte
-        result = crc_mul(result, SHIFT_BCK8)
-    return result ^ MAX_32
+        result ^= rev_bits(byte)
+        result = crc_mul(result, SHIFT_FWD8)
+    return rev_bits(result ^ MAX_32)
 
 """
 Unit tests
@@ -103,6 +111,16 @@ class TestCrc32(unittest.TestCase):
         assert crc_mul(1, 1) == 1
         assert crc_mul(SHIFT_FWD1, SHIFT_BCK1) == 1
         assert crc_mul(SHIFT_FWD8, SHIFT_BCK8) == 1
+        assert crc_mul(POLY_32, SHIFT_BCK_32) == 1
+
+    def test_rev_bits(self):
+        assert rev_bits(1, 1) == 1
+        assert rev_bits(1, 2) == 2
+        assert rev_bits(3, 2) == 3
+        assert rev_bits(0, 4) == 0
+        assert rev_bits(3, 4) == 12
+        assert rev_bits(6, 4) == 6
+        assert rev_bits(10, 4) == 5
 
     """
     TODO: Failing unit tests
@@ -113,7 +131,7 @@ class TestCrc32(unittest.TestCase):
         assert crc(b"\xFF") == 0xff000000
 
     def test_crc32_medium(self):
-        assert crc(b"\x00") == 0x38fb2284
+        assert crc(b"\x00") == 0xd202ef8d
         assert crc(b"a") == 0xe8b7be43
         assert crc(b"abc") == 0x352441c2
         assert crc(b"cat") == 0x9e5e43a8
