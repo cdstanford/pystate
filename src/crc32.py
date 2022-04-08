@@ -12,9 +12,9 @@ import unittest
 #     + x^12 + x^11 + x^10 + x^8 + x^7
 #     + x^5 + x^4 + x^2 + x + 1
 POLY_33 = 0b100000100110000010001110110110111
-POLY_32 = 0b00000100110000010001110110110111
-
-MAX_32 = 4294967295
+POLY_32  = 0b00000100110000010001110110110111
+MAX_32   = 0b11111111111111111111111111111111
+assert MAX_32 == 4294967295
 assert POLY_32 <= MAX_32
 assert POLY_32 + MAX_32 + 1 == POLY_33
 
@@ -39,14 +39,14 @@ def crc_mul(x, y):
     return result
 
 """
-CRC8 calculation
+CRC calculation
 """
-def crc8(x):
-    crc = MAX_32
+def crc(x, init=0):
+    result = init ^ MAX_32
     for byte in x:
-        crc ^= byte
-        crc = crc_mul(crc, POLY_8BIT)
-    return crc ^ MAX_32
+        result ^= byte
+        result = crc_mul(result, POLY_32)
+    return result ^ MAX_32
 
 """
 Unit tests
@@ -77,8 +77,12 @@ class TestCrc32(unittest.TestCase):
         assert crc_mul(128, 2**31) == (64 * POLY_32) ^ POLY_33
 
     def test_crc32(self):
-        # TODO
-        pass
+        # TODO: Failing unit test
+        assert crc(b"") == 0
+        assert crc(b"a") == 0xe8b7be43
+        assert crc(b"abc") == 0x352441c2
+        assert crc(b"cat") == 0x9e5e43a8
+        assert crc(b"a" * 100) == 0xaf707a64
 
 if __name__ == "__main__":
     # Run unit tests
