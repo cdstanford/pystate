@@ -88,8 +88,16 @@ class TestCrc32(unittest.TestCase):
         shift2 = crc_mul(shift1, shift1)
         shift4 = crc_mul(shift2, shift2)
         shift8 = crc_mul(shift4, shift4)
+        assert shift8 == 256
         assert shift1 == SHIFT_FWD1
         assert shift8 == SHIFT_FWD8
+
+    def test_mul_shift_bck(self):
+        shift1 = SHIFT_BCK1
+        shift2 = crc_mul(shift1, shift1)
+        shift4 = crc_mul(shift2, shift2)
+        shift8 = crc_mul(shift4, shift4)
+        assert shift8 == SHIFT_BCK8
 
     def test_mul_inverses(self):
         assert crc_mul(1, 1) == 1
