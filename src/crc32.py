@@ -14,9 +14,11 @@ import unittest
 POLY_33 = 0b100000100110000010001110110110111
 POLY_32  = 0b00000100110000010001110110110111
 MAX_32   = 0b11111111111111111111111111111111
-assert MAX_32 == 4294967295
-assert POLY_32 <= MAX_32
-assert POLY_32 + MAX_32 + 1 == POLY_33
+
+SHIFT_FWD1 = 0b00000000000000000000000000000010
+SHIFT_BCK1 = 0b10000010011000001000111011011011
+SHIFT_FWD8 = 0b00000000000000000000000100000000
+SHIFT_BCK8 = 0b10101001110100111110011010100110
 
 """
 Polynomial arithmetic (on 32-bit values)
@@ -39,19 +41,24 @@ def crc_mul(x, y):
     return result
 
 """
-CRC calculation
+CRC32 calculation
 """
 def crc(x, init=0):
     result = init ^ MAX_32
     for byte in x:
         result ^= byte
-        result = crc_mul(result, POLY_32)
+        result = crc_mul(result, 256)
     return result ^ MAX_32
 
 """
 Unit tests
 """
 class TestCrc32(unittest.TestCase):
+    def test_constants(self):
+        assert MAX_32 == 4294967295
+        assert POLY_32 <= MAX_32
+        assert POLY_32 + MAX_32 + 1 == POLY_33
+
     def test_mul(self):
         # Matching regular multiplication
         assert crc_mul(0, 0) == 0
@@ -76,12 +83,34 @@ class TestCrc32(unittest.TestCase):
         assert crc_mul(8, 2**31) == 4 * POLY_32
         assert crc_mul(128, 2**31) == (64 * POLY_32) ^ POLY_33
 
-    def test_crc32(self):
-        # TODO: Failing unit test
+    def test_mul_shift_fwd(self):
+        shift1 = 2
+        shift2 = crc_mul(shift1, shift1)
+        shift4 = crc_mul(shift2, shift2)
+        shift8 = crc_mul(shift4, shift4)
+        assert shift1 == SHIFT_FWD1
+        assert shift8 == SHIFT_FWD8
+
+    def test_mul_inverses(self):
+        assert crc_mul(1, 1) == 1
+        assert crc_mul(SHIFT_FWD1, SHIFT_BCK1) == 1
+        assert crc_mul(SHIFT_FWD8, SHIFT_BCK8) == 1
+
+    """
+    TODO: Failing unit tests
+    """
+
+    def test_crc32_easy(self):
         assert crc(b"") == 0
+        assert crc(b"\xFF") == 0xff00000
+        assert crc(b"\x00") == 0x38fb2284
+
+    def test_crc32_medium(self):
         assert crc(b"a") == 0xe8b7be43
         assert crc(b"abc") == 0x352441c2
         assert crc(b"cat") == 0x9e5e43a8
+
+    def test_crc32_hard(self):
         assert crc(b"a" * 100) == 0xaf707a64
 
 if __name__ == "__main__":
