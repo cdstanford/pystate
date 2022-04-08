@@ -47,7 +47,7 @@ def crc(x, init=0):
     result = init ^ MAX_32
     for byte in x:
         result ^= byte
-        result = crc_mul(result, 256)
+        result = crc_mul(result, SHIFT_BCK8)
     return result ^ MAX_32
 
 """
@@ -110,10 +110,10 @@ class TestCrc32(unittest.TestCase):
 
     def test_crc32_easy(self):
         assert crc(b"") == 0
-        assert crc(b"\xFF") == 0xff00000
-        assert crc(b"\x00") == 0x38fb2284
+        assert crc(b"\xFF") == 0xff000000
 
     def test_crc32_medium(self):
+        assert crc(b"\x00") == 0x38fb2284
         assert crc(b"a") == 0xe8b7be43
         assert crc(b"abc") == 0x352441c2
         assert crc(b"cat") == 0x9e5e43a8
