@@ -51,12 +51,29 @@ def rev_bits(x, width=32):
     x_bin_rev = ''.join(reversed(x_bin))
     return int(x_bin_rev, 2)
 
-def crc(x, init=0):
+def crc_push(c, byte):
+    c ^= byte
+    c = crc_mul(c, SHIFT_FWD8)
+    return c
+
+def crc_pop(c, byte):
+    c = crc_mul(c, SHIFT_BCK8)
+    c ^= byte
+    return c
+
+# Real CRC32 calculation agreeing with the standard implementation
+def crc32(x, init=0):
+    result = rev_bits(init ^ MAX_32)
+    for byte in x:
+        result = crc_push(result, rev_bits(byte))
+    return rev_bits(result ^ MAX_32)
+
+# CRC that we use here for convenience
+def crc_ours(x, init=0):
     result = init ^ MAX_32
     for byte in x:
-        result ^= rev_bits(byte)
-        result = crc_mul(result, SHIFT_FWD8)
-    return rev_bits(result ^ MAX_32)
+        result = crc_push(result, byte)
+    return result ^ MAX_32
 
 """
 Unit tests
@@ -127,17 +144,17 @@ class TestCrc32(unittest.TestCase):
     """
 
     def test_crc32_easy(self):
-        assert crc(b"") == 0
-        assert crc(b"\xFF") == 0xff000000
+        assert crc32(b"") == 0
+        assert crc32(b"\xFF") == 0xff000000
 
     def test_crc32_medium(self):
-        assert crc(b"\x00") == 0xd202ef8d
-        assert crc(b"a") == 0xe8b7be43
-        assert crc(b"abc") == 0x352441c2
-        assert crc(b"cat") == 0x9e5e43a8
+        assert crc32(b"\x00") == 0xd202ef8d
+        assert crc32(b"a") == 0xe8b7be43
+        assert crc32(b"abc") == 0x352441c2
+        assert crc32(b"cat") == 0x9e5e43a8
 
     def test_crc32_hard(self):
-        assert crc(b"a" * 100) == 0xaf707a64
+        assert crc32(b"a" * 100) == 0xaf707a64
 
 if __name__ == "__main__":
     # Run unit tests
