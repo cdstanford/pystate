@@ -76,6 +76,19 @@ def crc_ours(x, init=0):
     return result ^ MAX_32
 
 """
+The core superclass and decorators that do CRC tracking automatically.
+
+- Superclass wrapper which allows calling .get_crc()
+- Method decorators which update the stack-based CRC code
+"""
+class TrackState:
+    def __init__(self):
+        self._stack_crc = MAX_32
+
+    def get_crc(self):
+        return self._stack_crc ^ MAX_32
+
+"""
 Unit tests
 """
 class TestCrc32(unittest.TestCase):
