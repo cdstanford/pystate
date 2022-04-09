@@ -8,17 +8,14 @@ The output of this file should be the same as ex_manual.py.
 import crc32
 
 class Foo(crc32.TrackState):
-    @crc32.track_state_init
+    @crc32.track_init
     def __init__(self):
         pass
 
+    @crc32.track_stack_calls
     def recurse_n_times(self, n):
-        self._stack_crc = crc32.crc_push(self._stack_crc, n)
-        print(f"Call {n}, CRC {hex(self._stack_crc)}")
         if n > 0:
             self.recurse_n_times(n - 1)
-        self._stack_crc = crc32.crc_pop(self._stack_crc, n)
-        print(f"Return {n}, CRC {hex(self._stack_crc)}")
 
 x = Foo()
 x.recurse_n_times(5)

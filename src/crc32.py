@@ -89,11 +89,21 @@ class TrackState:
         return self._stack_crc ^ MAX_32
 
 # Mandatory decorator for the __init__ function
-def track_state_init(f):
+def track_init(f):
     def init_super(self):
         self._stack_crc = MAX_32
         f(self)
     return init_super
+
+# Optional decorator for any function calls to track
+def track_stack_calls(f):
+    def deco(self, *args, **kwargs):
+        self._stack_crc = crc_push(self._stack_crc, *args)
+        print(f"Call {args}, CRC {hex(self._stack_crc)}")
+        f(self, *args, **kwargs)
+        self._stack_crc = crc_pop(self._stack_crc, *args)
+        print(f"Return {args}, CRC {hex(self._stack_crc)}")
+    return deco
 
 """
 Unit tests
