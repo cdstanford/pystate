@@ -3,6 +3,9 @@ Example of how the CRC-based state hashing works for a simple class,
 using an automated decorator.
 
 The output of this file should be the same as ex_manual.py.
+
+Note: the decorators only output in debug mode.
+Running with python3 -O ex_decorated.py gives no output.
 """
 
 import crc32
