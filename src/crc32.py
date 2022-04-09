@@ -43,7 +43,7 @@ def crc_mul(x, y):
     return result
 
 """
-CRC32 calculation
+CRC32 calculation functions
 """
 def rev_bits(x, width=32):
     # Reverse-bits function
@@ -74,6 +74,38 @@ def crc_ours(x, init=0):
     for byte in x:
         result = crc_push(result, byte)
     return result ^ MAX_32
+
+"""
+CRC transformations
+
+This code calculates a transformation that can be then applied to any CRC
+code, rather than just updating a given initial CRC code.
+
+The transformation is represented as a triple (m, m', b),
+where the forward transformation is x |-> mx + b,
+and the backward transformation is x |-> m'(x + b).
+Here, m and m' are inverses, i.e. m m' = 1.
+"""
+
+def crc_transformation(bytes):
+    m_fwd = 1
+    m_bck = 1
+    b = 0
+    for byte in bytes:
+        m_fwd = crc_push(m_fwd, 0)
+        m_bck = crc_pop(m_bck, 0)
+        b = crc_push(b, byte)
+    return (m_fwd, m_bck, b)
+
+def apply_fwd(x, m_fwd, m_bck, b):
+    x = crc_mul(x, m_fwd)
+    x ^= b
+    return x
+
+def apply_bck(x, m_fwd, m_bck, b):
+    x ^= b
+    x = crc_mul(x, m_bck)
+    return x
 
 """
 The core superclass and decorators that do CRC tracking automatically.
