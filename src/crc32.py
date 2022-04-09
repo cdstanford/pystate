@@ -88,6 +88,13 @@ class TrackState:
     def get_crc(self):
         return self._stack_crc ^ MAX_32
 
+# Mandatory decorator for the __init__ function
+def track_state_init(f):
+    def init_super(self):
+        self._stack_crc = MAX_32
+        f(self)
+    return init_super
+
 """
 Unit tests
 """
