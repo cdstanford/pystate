@@ -1,8 +1,8 @@
 """
 Example of how the CRC-based state hashing works for a simple class,
-implemented manually.
+using an automated decorator.
 
-The output of this file should be the same as ex_decorated.py.
+The output of this file should be the same as ex_manual.py.
 """
 
 import crc32
