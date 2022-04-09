@@ -20,6 +20,19 @@ class Foo(crc32.TrackState):
         if n > 0:
             self.recurse_n_times(n - 1)
 
+    # Other types of methods to handle -- TODO
+    def no_args(self):
+        print("Hello from no_args")
+
+    def setter(self):
+        self.val = 42
+
+    def complex_args(self, my_int, my_str, my_list, flag=True):
+        if flag:
+            self.val += my_int
+            self.val += my_str.len()
+            self.val += my_list.len()
+
 x = Foo()
 x.recurse_n_times(5)
 x.get_crc()
