@@ -25,10 +25,12 @@ class Foo:
         self._stack_crc = crc32.crc_pop(self._stack_crc, n)
         print(f"Return, CRC {hex(self._stack_crc)}")
 
-    # Other types of methods to handle -- TODO
-    def no_args(self):
+    def complex_args(self, my_int, my_str, my_list, flag=True):
         # TODO: manual CRC update code
-        print("Hello from no_args")
+        if flag:
+            self.val += my_int
+            self.val += len(my_str)
+            self.val += len(my_list)
         print(f"Return, CRC {hex(self._stack_crc)}")
 
     def setter(self):
@@ -36,12 +38,9 @@ class Foo:
         self.val = 42
         print(f"Return, CRC {hex(self._stack_crc)}")
 
-    def complex_args(self, my_int, my_str, my_list, flag=True):
+    def no_args(self):
         # TODO: manual CRC update code
-        if flag:
-            self.val += my_int
-            self.val += len(my_str)
-            self.val += len(my_list)
+        print("Hello from no_args")
         print(f"Return, CRC {hex(self._stack_crc)}")
 
 x = Foo()
@@ -52,8 +51,9 @@ x.complex_args(1, "2", [3, 4, 5])
 x.complex_args(6, "7", [], False)
 x.complex_args(6, "7", [], flag=False)
 
-# TODO
-# x.no_args()
-# x.setter()
+x.setter()
+x.setter()
+
+x.no_args()
 
 x.get_crc()

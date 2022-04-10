@@ -22,19 +22,20 @@ class Foo(crc32.TrackState):
         if n > 0:
             self.recurse_n_times(n - 1)
 
-    # Other types of methods to handle -- TODO
-    def no_args(self):
-        print("Hello from no_args")
-
-    def setter(self):
-        self.val = 42
-
     @crc32.track_stack_calls
     def complex_args(self, my_int, my_str, my_list, flag=True):
         if flag:
             self.val += my_int
             self.val += len(my_str)
             self.val += len(my_list)
+
+    @crc32.track_stack_calls
+    def setter(self):
+        self.val = 42
+
+    @crc32.track_stack_calls
+    def no_args(self):
+        print("Hello from no_args")
 
 x = Foo()
 
@@ -44,8 +45,9 @@ x.complex_args(1, "2", [3, 4, 5])
 x.complex_args(6, "7", [], False)
 x.complex_args(6, "7", [], flag=False)
 
-# TODO
-# x.no_args()
-# x.setter()
+x.setter()
+x.setter()
+
+x.no_args()
 
 x.get_crc()

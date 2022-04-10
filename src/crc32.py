@@ -139,7 +139,10 @@ class TrackState:
         self._stack_crc = MAX_32
 
     def get_crc(self):
-        return self._stack_crc ^ MAX_32
+        c = self._stack_crc
+        class_var_pickle = pickle.dumps(self.__dict__)
+        c = crc_push_bytes(c, class_var_pickle)
+        return c ^ MAX_32
 
 # Mandatory decorator for the __init__ function
 def track_init(f):
@@ -155,11 +158,11 @@ def track_stack_calls(f):
         call_pickle = pickle.dumps(call)
         self._stack_crc = crc_push_bytes(self._stack_crc, call_pickle)
         if __debug__:
-            print(f"Call {call}, CRC {hex(self._stack_crc)}")
+            print(f"Call {call}, CRC {hex(self.get_crc())}")
         f(self, *args, **kwargs)
         self._stack_crc = crc_pop_bytes(self._stack_crc, call_pickle)
         if __debug__:
-            print(f"Return, CRC {hex(self._stack_crc)}")
+            print(f"Return, CRC {hex(self.get_crc())}")
     return deco
 
 """
