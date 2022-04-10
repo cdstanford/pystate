@@ -7,6 +7,9 @@ but we also need the more primitive CRC arithmetic operations.
 
 import unittest
 
+# Pickle -- used to convert arbitrary objects to byte sequences
+import pickle
+
 # Polynomial:
 #   x^32 + x^26 + x^23 + x^22 + x^16
 #     + x^12 + x^11 + x^10 + x^8 + x^7
@@ -43,7 +46,7 @@ def crc_mul(x, y):
     return result
 
 """
-CRC32 calculation functions
+CRC32 calculation auxiliary functions and primitives
 """
 def rev_bits(x, width=32):
     # Reverse-bits function
@@ -61,19 +64,29 @@ def crc_pop(c, byte):
     c ^= byte
     return c
 
-# Real CRC32 calculation agreeing with the standard implementation
+def crc_push_bytes(c, bytes):
+    for byte in bytes:
+        c = crc_push(c, byte)
+    return c
+
+def crc_pop_bytes(c, bytes):
+    for byte in reversed(bytes):
+        c = crc_pop(c, byte)
+    return c
+
+"""
+Real CRC32 calculation agreeing with the standard implementation.
+
+Note that this reverses the bits of each byte. Since we are the
+ones providing the bytes and can use whatever convention we want,
+we omit this in our code and use crc_push / crc_pop directly.
+"""
+
 def crc32(x, init=0):
     result = rev_bits(init ^ MAX_32)
     for byte in x:
         result = crc_push(result, rev_bits(byte))
     return rev_bits(result ^ MAX_32)
-
-# CRC that we use here for convenience
-def crc_ours(x, init=0):
-    result = init ^ MAX_32
-    for byte in x:
-        result = crc_push(result, byte)
-    return result ^ MAX_32
 
 """
 CRC transformations
@@ -138,13 +151,15 @@ def track_init(f):
 # Optional decorator for any function calls to track
 def track_stack_calls(f):
     def deco(self, *args, **kwargs):
-        self._stack_crc = crc_push(self._stack_crc, *args)
+        call = (args, kwargs, f.__name__)
+        call_pickle = pickle.dumps(call)
+        self._stack_crc = crc_push_bytes(self._stack_crc, call_pickle)
         if __debug__:
-            print(f"Call {args}, CRC {hex(self._stack_crc)}")
+            print(f"Call {call}, CRC {hex(self._stack_crc)}")
         f(self, *args, **kwargs)
-        self._stack_crc = crc_pop(self._stack_crc, *args)
+        self._stack_crc = crc_pop_bytes(self._stack_crc, call_pickle)
         if __debug__:
-            print(f"Return {args}, CRC {hex(self._stack_crc)}")
+            print(f"Return, CRC {hex(self._stack_crc)}")
     return deco
 
 """
