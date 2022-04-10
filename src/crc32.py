@@ -87,22 +87,30 @@ and the backward transformation is x |-> m'(x + b).
 Here, m and m' are inverses, i.e. m m' = 1.
 """
 
-def crc_transformation(bytes):
-    m_fwd = 1
-    m_bck = 1
-    b = 0
+def crc_transformation(bytes, init=(1, 1, 0)):
+    m_fwd, m_bck, b = init
     for byte in bytes:
         m_fwd = crc_push(m_fwd, 0)
         m_bck = crc_pop(m_bck, 0)
         b = crc_push(b, byte)
     return (m_fwd, m_bck, b)
 
-def apply_fwd(x, m_fwd, m_bck, b):
+def compose_transformations(tfm1, tfm2):
+    m_fwd1, m_bck1, b1 = tfm1
+    m_fwd2, m_bck2, b2 = tfm2
+    m_fwd = crc_mul(m_fwd1, m_fwd2)
+    m_bck = crc_mul(m_bck1, m_bck2)
+    b = crc_add(crc_mul(b1, m_fwd2), b2)
+    return (m_fwd, m_bck, b)
+
+def apply_fwd(tfm, b):
+    m_fwd, _, b = tfm
     x = crc_mul(x, m_fwd)
     x ^= b
     return x
 
-def apply_bck(x, m_fwd, m_bck, b):
+def apply_bck(tfm, b):
+    _, m_bck, b = tfm
     x ^= b
     x = crc_mul(x, m_bck)
     return x
