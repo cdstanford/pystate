@@ -12,12 +12,14 @@ We use CRC32 because it can be updated conveniently when state changes. Note tha
 
 ## How to use
 
-An example is in `src/ex_decorated.py`. To use:
+An example is in `src/ex_decorated.py`. To use pystate:
 
-1. Create your Python class, and have it inherit from `crc32.TrackState`
+1. `import pystate`
 
-2. Wrap `__init__` with the decorator `@crc32.track_init`
+2. Create your Python class, and have it inherit from `pystate.TrackState`
 
-3. Wrap all other methods that you wish to track the state for with `@crc32.track_stack_calls`.
+3. Wrap `__init__` with the decorator `@pystate.track_init`
+
+4. Wrap all other methods that you wish to track the state for with `@pystate.track_stack_calls`.
 
 Then you can call `.get_crc()` at any point, which returns the current CRC value of the state.

@@ -7,22 +7,22 @@ ex_decorated.py, since the objects are turned into bytes a little
 differently.
 """
 
-import crc32
+import pystate
 
 class Foo:
     def __init__(self):
-        self._stack_crc = crc32.MAX_32
+        self._stack_crc = pystate.MAX_32
         self.val = 0
 
     def get_crc(self):
-        return self._stack_crc ^ crc32.MAX_32
+        return self._stack_crc ^ pystate.MAX_32
 
     def recurse_n_times(self, n):
-        self._stack_crc = crc32.crc_push(self._stack_crc, n)
+        self._stack_crc = pystate.crc_push(self._stack_crc, n)
         print(f"Call {n}, CRC {hex(self._stack_crc)}")
         if n > 0:
             self.recurse_n_times(n - 1)
-        self._stack_crc = crc32.crc_pop(self._stack_crc, n)
+        self._stack_crc = pystate.crc_pop(self._stack_crc, n)
         print(f"Return, CRC {hex(self._stack_crc)}")
 
     def complex_args(self, my_int, my_str, my_list, flag=True):

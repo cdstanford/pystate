@@ -1,8 +1,7 @@
 """
-Basic functionality for CRC32 codes
+Implementation of the pystate tracking.
 
-This should match a library implementation such as binascii.crc32,
-but we also need the more primitive CRC arithmetic operations.
+Includes basic functionality for CRC32 codes.
 """
 
 import unittest
@@ -75,11 +74,12 @@ def crc_pop_bytes(c, bytes):
     return c
 
 """
-Real CRC32 calculation agreeing with the standard implementation.
+True CRC32 calculation agreeing with a standard implementation such
+as binascii.crc32.
 
 Note that this reverses the bits of each byte. Since we are the
 ones providing the bytes and can use whatever convention we want,
-we omit this in our code and use crc_push / crc_pop directly.
+we omit this in our code and use crc_push / crc_pop directly instead.
 """
 
 def crc32(x, init=0):
@@ -98,6 +98,8 @@ The transformation is represented as a triple (m, m', b),
 where the forward transformation is x |-> mx + b,
 and the backward transformation is x |-> m'(x + b).
 Here, m and m' are inverses, i.e. m m' = 1.
+
+Note: these are currently unused.
 """
 
 def crc_transformation(bytes, init=(1, 1, 0)):
