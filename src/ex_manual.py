@@ -40,7 +40,11 @@ class Foo:
 
     def no_args(self):
         # TODO: manual CRC update code
-        print("Hello from no_args")
+        print(f"Return, CRC {hex(self._stack_crc)}")
+
+    def call_no_args(self):
+        # TODO: manual CRC update code
+        self.no_args()
         print(f"Return, CRC {hex(self._stack_crc)}")
 
 x = Foo()
@@ -55,5 +59,7 @@ x.setter()
 x.setter()
 
 x.no_args()
+
+x.call_no_args()
 
 x.get_crc()

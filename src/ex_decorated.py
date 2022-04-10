@@ -35,7 +35,11 @@ class Foo(crc32.TrackState):
 
     @crc32.track_stack_calls
     def no_args(self):
-        print("Hello from no_args")
+        pass
+
+    @crc32.track_stack_calls
+    def call_no_args(self):
+        self.no_args()
 
 x = Foo()
 
@@ -49,5 +53,7 @@ x.setter()
 x.setter()
 
 x.no_args()
+
+x.call_no_args()
 
 x.get_crc()
