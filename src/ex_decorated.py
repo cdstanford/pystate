@@ -1,13 +1,9 @@
 """
 Example of how the CRC-based state hashing works for a simple class,
-using an automated decorator.
+using the automated decorator.
 
-The output of this file should be similar (but not exactly the same) as
-ex_manual.py, since the objects are turned into bytes a little
-differently.
-
-Note: the decorators only output in debug mode.
-Running with python3 -O ex_decorated.py gives no output.
+Note: the decorators only output text in debug mode.
+So running with python3 -O ex_decorated.py gives no output.
 """
 
 import pystate
