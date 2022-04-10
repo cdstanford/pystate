@@ -140,8 +140,8 @@ class TrackState:
 
     def get_crc(self):
         c = self._stack_crc
-        class_var_pickle = pickle.dumps(self.__dict__)
-        c = crc_push_bytes(c, class_var_pickle)
+        attrs_pickle = pickle.dumps(self.__dict__)
+        c = crc_push_bytes(c, attrs_pickle)
         return c ^ MAX_32
 
 # Mandatory decorator for the __init__ function
