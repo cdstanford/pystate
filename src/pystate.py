@@ -2,6 +2,8 @@
 Implementation of the pystate tracking.
 
 Includes basic functionality for CRC32 codes.
+
+Source and license at: https://github.com/cdstanford/pystate
 """
 
 import unittest
