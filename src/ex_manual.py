@@ -67,4 +67,4 @@ x.no_args()
 
 x.call_no_args()
 
-x.get_crc()
+print(f"Final CRC: {hex(x.get_crc())}")

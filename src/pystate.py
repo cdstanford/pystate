@@ -135,22 +135,50 @@ The core superclass and decorators that do CRC tracking automatically.
 
 - Superclass wrapper which allows calling .get_crc()
 - Method decorators which update the stack-based CRC code
+- .is_new() checks whether the current CRC is new since the last call
+  to the function. A set is used to store the past CRC values.
 """
 class TrackState:
     def __init__(self):
         self._stack_crc = MAX_32
+        self._seen = set()
 
     def get_crc(self):
         c = self._stack_crc
+
+        # Get a pickled byte sequence for the attributes.
+        # Bad: the pickle of self.__dict__ includes our attribute _seen!
+        # So we need to temporarily remove this before pickling.
+        self._seen, tmp_seen = set(), self._seen
         attrs_pickle = pickle.dumps(self.__dict__)
+        self._seen = tmp_seen
+
         c = crc_push_bytes(c, attrs_pickle)
         return c ^ MAX_32
+
+    def is_new(self):
+        c = self.get_crc()
+        if c in self._seen:
+            return False
+        else:
+            self._seen.add(c)
+            return True
+
+    def debug_str(self):
+        # Return current CRC and whether it's new
+        if self.is_new():
+            return f"CRC {hex(self.get_crc())} (new)"
+        else:
+            return f"CRC {hex(self.get_crc())} (old)"
 
 # Mandatory decorator for the __init__ function
 def track_init(f):
     def init_super(self):
         self._stack_crc = MAX_32
+        self._seen = set()
         f(self)
+        if __debug__:
+            print(f"Init, {self.debug_str()}")
     return init_super
 
 # Optional decorator for any function calls to track
@@ -160,11 +188,11 @@ def track_stack_calls(f):
         call_pickle = pickle.dumps(call)
         self._stack_crc = crc_push_bytes(self._stack_crc, call_pickle)
         if __debug__:
-            print(f"Call {call}, CRC {hex(self.get_crc())}")
+            print(f"Call {call}, {self.debug_str()}")
         f(self, *args, **kwargs)
         self._stack_crc = crc_pop_bytes(self._stack_crc, call_pickle)
         if __debug__:
-            print(f"Return, CRC {hex(self.get_crc())}")
+            print(f"Return, {self.debug_str()}")
     return deco
 
 """

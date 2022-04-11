@@ -23,3 +23,5 @@ An example is in `src/ex_decorated.py`. To use pystate:
 4. Wrap all other methods that you wish to track the state for with `@pystate.track_stack_calls`.
 
 Then you can call `.get_crc()` at any point, which returns the current CRC value of the state.
+
+If you want to track whether the CRC is newly seen, you can also call `.is_new()` which checks whether the current CRC does not equal any the state on any previous invocation of `.is_new()`.
