@@ -6,10 +6,8 @@ Includes basic functionality for CRC32 codes.
 Source and license at: https://github.com/cdstanford/pystate
 """
 
-import unittest
-
-# Pickle -- used to convert arbitrary objects to byte sequences
 import pickle
+import unittest
 
 # Polynomial:
 #   x^32 + x^26 + x^23 + x^22 + x^16
@@ -133,6 +131,16 @@ def apply_bck(tfm, b):
     return x
 
 """
+Pickle wrapper -- convert an arbitrary object to a sequence of bytes
+
+As of Python 3, pickle.dumps returns a bytes object, but in Python 2.7,
+it returned a string, so we need to convert it to bytes.
+The following code works in both Python 2 and Python 3.
+"""
+def pickle_bytes(x):
+    return bytearray(pickle.dumps(x))
+
+"""
 The core superclass and decorators that do CRC tracking automatically.
 
 - Superclass wrapper which allows calling .get_crc()
@@ -152,7 +160,7 @@ class TrackState:
         # Bad: the pickle of self.__dict__ includes our attribute _seen!
         # So we need to temporarily remove this before pickling.
         self._seen, tmp_seen = set(), self._seen
-        attrs_pickle = pickle.dumps(self.__dict__)
+        attrs_pickle = pickle_bytes(self.__dict__)
         self._seen = tmp_seen
 
         c = crc_push_bytes(c, attrs_pickle)
@@ -169,9 +177,9 @@ class TrackState:
     def debug_str(self):
         # Return current CRC and whether it's new
         if self.is_new():
-            return f"CRC {hex(self.get_crc())} (new)"
+            return "CRC {} (new)".format(hex(self.get_crc()))
         else:
-            return f"CRC {hex(self.get_crc())} (old)"
+            return "CRC {} (old)".format(hex(self.get_crc()))
 
 # Mandatory decorator for the __init__ function
 def track_init(f):
@@ -180,21 +188,21 @@ def track_init(f):
         self._seen = set()
         f(self)
         if __debug__:
-            print(f"Init, {self.debug_str()}")
+            print("Init, {}".format(self.debug_str()))
     return init_super
 
 # Optional decorator for any function calls to track
 def track_stack_calls(f):
     def deco(self, *args, **kwargs):
         call = (args, kwargs, f.__name__)
-        call_pickle = pickle.dumps(call)
+        call_pickle = pickle_bytes(call)
         self._stack_crc = crc_push_bytes(self._stack_crc, call_pickle)
         if __debug__:
-            print(f"Call {call}, {self.debug_str()}")
+            print("Call {}, {}".format(call, self.debug_str()))
         f(self, *args, **kwargs)
         self._stack_crc = crc_pop_bytes(self._stack_crc, call_pickle)
         if __debug__:
-            print(f"Return, {self.debug_str()}")
+            print("Return, {}".format(self.debug_str()))
     return deco
 
 """

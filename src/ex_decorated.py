@@ -52,4 +52,4 @@ x.no_args()
 
 x.call_no_args()
 
-print(f"Final CRC: {hex(x.get_crc())}")
+print("Final CRC: {}".format(hex(x.get_crc())))
