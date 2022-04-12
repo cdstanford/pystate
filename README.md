@@ -10,6 +10,12 @@ Local variables and line-specific state are currently unsupported.
 
 We use CRC32 because it can be updated conveniently when state changes. Note that since it's a 32-bit hash, it is not an exact representation. It's also not cryptographically secure and doesn't necessarily behave pseudorandomly.
 
+## Dependencies
+
+This code works with both Python 3 (>= 3.9.9) and Python 2 (>= 2.7.18).
+
+It requires `pickle` and `unittest`, both of which are part of the standard library and should not need to be installed separately.
+
 ## How to use
 
 An example is in `src/ex_decorated.py`. To use pystate:
