@@ -10,8 +10,10 @@ import pystate
 
 class Foo(pystate.TrackState):
     @pystate.track_init
-    def __init__(self):
+    def __init__(self, dummy_arg, kw_1=2, kw_2=3):
         self.val = 0
+        self.dummy_arg = dummy_arg
+        self.blah = 2
 
     @pystate.track_stack_calls
     def recurse_n_times(self, n):
@@ -37,7 +39,7 @@ class Foo(pystate.TrackState):
     def call_no_args(self):
         self.no_args()
 
-x = Foo()
+x = Foo(3, kw_1=0)
 
 x.recurse_n_times(5)
 

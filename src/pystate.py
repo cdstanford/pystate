@@ -183,10 +183,10 @@ class TrackState:
 
 # Mandatory decorator for the __init__ function
 def track_init(f):
-    def init_super(self):
+    def init_super(self, *args, **kwargs):
         self._stack_crc = MAX_32
         self._seen = set()
-        f(self)
+        f(self, *args, **kwargs)
         if __debug__:
             print("Init, {}".format(self.debug_str()))
     return init_super
