@@ -12,7 +12,7 @@ We use CRC32 because it can be updated conveniently when state changes. Note tha
 
 ## Dependencies
 
-This code works with both Python 3 (>= 3.9.9) and Python 2 (>= 2.7.18).
+This code works with both Python 3 (version 3.9.9) and Python 2 (version 2.7.18).
 
 It requires `pickle` and `unittest`, both of which are part of the standard library and should not need to be installed separately.
 
