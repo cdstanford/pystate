@@ -8,12 +8,16 @@ So running with python3 -O ex_decorated.py gives no output.
 
 import pystate
 
+# Additional module imports for examples of unpicklable objects
+import threading # for threading.Lock()
+
 class Foo(pystate.TrackState):
     @pystate.track_init
     def __init__(self, dummy_arg, kw_1=2, kw_2=3):
         self.val = 0
         self.dummy_arg = dummy_arg
         self.blah = 2
+        self.unpicklable = threading.Lock()
 
     @pystate.track_stack_calls
     def recurse_n_times(self, n):

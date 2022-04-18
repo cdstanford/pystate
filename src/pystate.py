@@ -167,10 +167,14 @@ class TrackState:
         #   - non-picklable cases (TODO)
         for attr in sorted(self.__dict__.keys()):
             if attr[0] != '_':
-                attr_val = self.__dict__[attr]
-                # print("  Pickling: self.{} = {}".format(attr, attr_val))
-                attr_pickle = pickle_bytes(attr_val)
-                c = crc_push_bytes(c, attr_pickle)
+                try:
+                    attr_val = self.__dict__[attr]
+                    attr_pickle = pickle_bytes(attr_val)
+                    c = crc_push_bytes(c, attr_pickle)
+                    # print("  Pickled: self.{} = {}".format(attr, attr_val))
+                except TypeError:
+                    # print("  Couldn't pickle: self.{} = {}".format(attr, attr_val))
+                    pass
 
         return c ^ MAX_32
 
