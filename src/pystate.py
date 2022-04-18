@@ -158,12 +158,20 @@ class TrackState:
 
         # Get a pickled byte sequence for the attributes.
         # Bad: the pickle of self.__dict__ includes our attribute _seen!
-        # So we need to temporarily remove this before pickling.
-        self._seen, tmp_seen = set(), self._seen
-        attrs_pickle = pickle_bytes(self.__dict__)
-        self._seen = tmp_seen
+        # Old solution was to temporarily remove this before pickling: like
+        # self._seen, tmp_seen = set(), self._seen
+        # Now we ignore all attributes with _ at the start.
 
-        c = crc_push_bytes(c, attrs_pickle)
+        # Pickle remaining attributes, filtering out:
+        #   - attributes starting with an underscore
+        #   - non-picklable cases (TODO)
+        for attr in sorted(self.__dict__.keys()):
+            if attr[0] != '_':
+                attr_val = self.__dict__[attr]
+                # print("  Pickling: self.{} = {}".format(attr, attr_val))
+                attr_pickle = pickle_bytes(attr_val)
+                c = crc_push_bytes(c, attr_pickle)
+
         return c ^ MAX_32
 
     def is_new(self):
@@ -176,10 +184,13 @@ class TrackState:
 
     def debug_str(self):
         # Return current CRC and whether it's new
-        if self.is_new():
-            return "CRC {} (new)".format(hex(self.get_crc()))
+        # Also performs the same update as in .is_new()
+        c = self.get_crc()
+        if c in self._seen:
+            return "CRC {} (old)".format(c)
         else:
-            return "CRC {} (old)".format(hex(self.get_crc()))
+            self._seen.add(c)
+            return "CRC {} (new)".format(c)
 
 # Mandatory decorator for the __init__ function
 def track_init(f):
@@ -194,7 +205,7 @@ def track_init(f):
 # Optional decorator for any function calls to track
 def track_stack_calls(f):
     def deco(self, *args, **kwargs):
-        call = (args, kwargs, f.__name__)
+        call = (f.__name__, args, kwargs)
         call_pickle = pickle_bytes(call)
         self._stack_crc = crc_push_bytes(self._stack_crc, call_pickle)
         if __debug__:
