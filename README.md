@@ -1,6 +1,6 @@
 # pystate
 
-Demonstration of call-sensitive CRC32-based state tracking for Python objects.
+Demonstration of call-sensitive [CRC32](https://en.wikipedia.org/wiki/Cyclic_redundancy_check)-based state tracking for Python objects.
 
 ## About
 
