@@ -43,16 +43,26 @@ class Foo(pystate.TrackState):
     def call_no_args(self):
         self.no_args()
 
+    @pystate.track_stack_calls
+    def return_val(self):
+        return self.val
+
 x = Foo(3, kw_1=0)
 
 x.recurse_n_times(5)
+
+print("* Should be 0: {}".format(x.return_val()))
 
 x.complex_args(1, "2", [3, 4, 5])
 x.complex_args(6, "7", [], False)
 x.complex_args(6, "7", [], flag=False)
 
+print("* Should be 5: {}".format(x.return_val()))
+
 x.setter()
 x.setter()
+
+print("* Should be 42: {}".format(x.return_val()))
 
 x.no_args()
 

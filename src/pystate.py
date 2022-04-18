@@ -214,10 +214,11 @@ def track_stack_calls(f):
         self._stack_crc = crc_push_bytes(self._stack_crc, call_pickle)
         if __debug__:
             print("Call {}, {}".format(call, self.debug_str()))
-        f(self, *args, **kwargs)
+        result = f(self, *args, **kwargs)
         self._stack_crc = crc_pop_bytes(self._stack_crc, call_pickle)
         if __debug__:
             print("Return, {}".format(self.debug_str()))
+        return result
     return deco
 
 """
