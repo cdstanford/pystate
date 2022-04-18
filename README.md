@@ -31,3 +31,12 @@ An example is in `src/ex_decorated.py`. To use pystate:
 Then you can call `.get_crc()` at any point, which returns the current CRC value of the state.
 
 If you want to track whether the CRC is newly seen, you can also call `.is_new()` which checks whether the current CRC does not equal any the state on any previous invocation of `.is_new()`.
+
+## Technical notes and limitations
+
+This module heavily relies on `pickle` and lifts some limitations from `pickle`.
+The maintained CRC code is a hash of the following bytes, in order:
+1. All function calls on the stack (pickled triple of the function name, arguments, and keyword arguments)
+2. All attributes in the object not prefixed with `_`, and which are picklable
+
+Unpicklable attributes are thus supported (with a simple try-catch if the pickling fails), e.g. `threading.Lock()` but unpicklable function arguments are not. Any class with relevant attributes prefixed with `_` is also currently not supported.
