@@ -1,9 +1,9 @@
 """
-Example of how the CRC-based state hashing works for a simple class,
-implemented manually.
-
-NOTE: this file is just for reference. See ex_decorated.py for
+NOTE: this file is probably not what you want. See ex_decorated.py for
 the correct usage of the module.
+
+Example of how the CRC-based state hashing works for a simple class,
+*implemented manually*.
 
 The output of this file should be similar (but not exactly the same) as
 ex_decorated.py, since the objects are turned into bytes a little
