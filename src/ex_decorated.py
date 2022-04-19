@@ -45,6 +45,11 @@ class Foo(pystate.TrackState):
     def return_val(self):
         return self.val
 
+    # Note: @pystate.track_stack_calls can't be used on class methods.
+    @staticmethod
+    def sum(a, b):
+        return a + b
+
 x = Foo(3, kw_1=0)
 
 x.recurse_n_times(5)
@@ -65,5 +70,7 @@ print("* Should be 42: {}".format(x.return_val()))
 x.no_args()
 
 x.call_no_args()
+
+print("* Should be 5: {}".format(Foo.sum(2, 3)))
 
 print("Final CRC: {}".format(hex(x.get_crc())))
