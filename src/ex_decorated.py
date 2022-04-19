@@ -1,18 +1,16 @@
 """
 Example of how the CRC-based state hashing works for a simple class,
 using the automated decorator.
-
-Note: the decorators only output text in debug mode.
-So running with python3 -O ex_decorated.py gives no output.
 """
 
 import pystate
-
-# Additional module imports for examples of unpicklable objects
-import threading # for threading.Lock()
+# Additional module import for threading.Lock(), an
+# example of an unpicklable object
+import threading
 
 class Foo(pystate.TrackState):
-    @pystate.track_init
+    # Note: replace with @pystate.track_init to disable debug print info
+    @pystate.track_init_print_stack_calls
     def __init__(self, dummy_arg, kw_1=2, kw_2=3):
         self.val = 0
         self.dummy_arg = dummy_arg

@@ -9,6 +9,10 @@ Source and license at: https://github.com/cdstanford/pystate
 import pickle
 import unittest
 
+"""
+CRC constants
+"""
+
 # Polynomial:
 #   x^32 + x^26 + x^23 + x^22 + x^16
 #     + x^12 + x^11 + x^10 + x^8 + x^7
@@ -201,9 +205,19 @@ def track_init(f):
     def init_super(self, *args, **kwargs):
         self._stack_crc = MAX_32
         self._seen = set()
+        self._print_stack_calls = False
         f(self, *args, **kwargs)
-        if __debug__:
-            print("Init, {}".format(self.debug_str()))
+        self.is_new() # initialize seen set
+    return init_super
+# Alternative version for __init__ if printing stack calls is desired.
+# Useful for debugging purposes.
+def track_init_print_stack_calls(f):
+    def init_super(self, *args, **kwargs):
+        self._stack_crc = MAX_32
+        self._seen = set()
+        self._print_stack_calls = True
+        f(self, *args, **kwargs)
+        print("Init, {}".format(self.debug_str()))
     return init_super
 
 # Optional decorator for any function calls to track
@@ -212,11 +226,11 @@ def track_stack_calls(f):
         call = (f.__name__, args, kwargs)
         call_pickle = pickle_bytes(call)
         self._stack_crc = crc_push_bytes(self._stack_crc, call_pickle)
-        if __debug__:
+        if self._print_stack_calls:
             print("Call {}, {}".format(call, self.debug_str()))
         result = f(self, *args, **kwargs)
         self._stack_crc = crc_pop_bytes(self._stack_crc, call_pickle)
-        if __debug__:
+        if self._print_stack_calls:
             print("Return, {}".format(self.debug_str()))
         return result
     return deco
