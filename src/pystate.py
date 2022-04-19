@@ -172,7 +172,7 @@ class TrackState:
                     attr_pickle = pickle_bytes(attr_val)
                     c = crc_push_bytes(c, attr_pickle)
                     # print("  Pickled: self.{} = {}".format(attr, attr_val))
-                except TypeError:
+                except (TypeError, pickle.PicklingError):
                     # print("  Couldn't pickle: self.{} = {}".format(attr, attr_val))
                     pass
 
