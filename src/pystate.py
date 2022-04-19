@@ -144,6 +144,12 @@ The following code works in both Python 2 and Python 3.
 def pickle_bytes(x):
     return bytearray(pickle.dumps(x))
 
+def try_pickle_bytes(x):
+    try:
+        return pickle_bytes(x)
+    except (TypeError, pickle.PicklingError):
+        return None
+
 """
 The core superclass and decorators that do CRC tracking automatically.
 
@@ -171,14 +177,10 @@ class TrackState:
         #   - non-picklable cases (TODO)
         for attr in sorted(self.__dict__.keys()):
             if attr[0] != '_':
-                try:
-                    attr_val = self.__dict__[attr]
-                    attr_pickle = pickle_bytes(attr_val)
+                attr_val = self.__dict__[attr]
+                attr_pickle = try_pickle_bytes(attr_val)
+                if attr_pickle is not None:
                     c = crc_push_bytes(c, attr_pickle)
-                    # print("  Pickled: self.{} = {}".format(attr, attr_val))
-                except (TypeError, pickle.PicklingError):
-                    # print("  Couldn't pickle: self.{} = {}".format(attr, attr_val))
-                    pass
 
         return c ^ MAX_32
 
