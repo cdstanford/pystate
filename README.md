@@ -32,6 +32,10 @@ Then you can call `.get_crc()` at any point, which returns the current CRC value
 
 If you want to track whether the CRC is newly seen, you can also call `.is_new()` which checks whether the current CRC does not equal any the state on any previous invocation of `.is_new()`.
 
+## Issues
+
+If you have any issues using pystate, bug reports, or feedback, please file an issue on this github repository! The author will try to assist.
+
 ## Technical notes and limitations
 
 This module heavily relies on `pickle` and lifts some limitations from `pickle`.
