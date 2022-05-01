@@ -51,11 +51,6 @@ def crc_mul(x, y):
 """
 CRC32 calculation auxiliary functions and primitives
 """
-def rev_bits(x, width=32):
-    # Reverse-bits function
-    x_bin = bin(x)[2:].zfill(width)
-    x_bin_rev = ''.join(reversed(x_bin))
-    return int(x_bin_rev, 2)
 
 def crc_push(c, byte):
     c ^= byte
@@ -84,13 +79,22 @@ as binascii.crc32.
 Note that this reverses the bits of each byte. Since we are the
 ones providing the bytes and can use whatever convention we want,
 we omit this in our code and use crc_push / crc_pop directly instead.
+
+As such, this is only used for the unit tests (to check that we can do
+a standard CRC32 calculation), and is private to this module.
 """
 
-def crc32(x, init=0):
-    result = rev_bits(init ^ MAX_32)
+def _rev_bits(x, width=32):
+    # Reverse-bits function
+    x_bin = bin(x)[2:].zfill(width)
+    x_bin_rev = ''.join(reversed(x_bin))
+    return int(x_bin_rev, 2)
+
+def _real_crc32(x, init=0):
+    result = _rev_bits(init ^ MAX_32)
     for byte in x:
-        result = crc_push(result, rev_bits(byte))
-    return rev_bits(result ^ MAX_32)
+        result = crc_push(result, _rev_bits(byte))
+    return _rev_bits(result ^ MAX_32)
 
 """
 CRC transformations
@@ -103,36 +107,36 @@ where the forward transformation is x |-> mx + b,
 and the backward transformation is x |-> m'(x + b).
 Here, m and m' are inverses, i.e. m m' = 1.
 
-Note: these are currently unused.
+Note: these are currently unused, so commented out.
 """
 
-def crc_transformation(bytes, init=(1, 1, 0)):
-    m_fwd, m_bck, b = init
-    for byte in bytes:
-        m_fwd = crc_push(m_fwd, 0)
-        m_bck = crc_pop(m_bck, 0)
-        b = crc_push(b, byte)
-    return (m_fwd, m_bck, b)
-
-def compose_transformations(tfm1, tfm2):
-    m_fwd1, m_bck1, b1 = tfm1
-    m_fwd2, m_bck2, b2 = tfm2
-    m_fwd = crc_mul(m_fwd1, m_fwd2)
-    m_bck = crc_mul(m_bck1, m_bck2)
-    b = crc_add(crc_mul(b1, m_fwd2), b2)
-    return (m_fwd, m_bck, b)
-
-def apply_fwd(tfm, b):
-    m_fwd, _, b = tfm
-    x = crc_mul(x, m_fwd)
-    x ^= b
-    return x
-
-def apply_bck(tfm, b):
-    _, m_bck, b = tfm
-    x ^= b
-    x = crc_mul(x, m_bck)
-    return x
+# def crc_transformation(bytes, init=(1, 1, 0)):
+#     m_fwd, m_bck, b = init
+#     for byte in bytes:
+#         m_fwd = crc_push(m_fwd, 0)
+#         m_bck = crc_pop(m_bck, 0)
+#         b = crc_push(b, byte)
+#     return (m_fwd, m_bck, b)
+#
+# def compose_transformations(tfm1, tfm2):
+#     m_fwd1, m_bck1, b1 = tfm1
+#     m_fwd2, m_bck2, b2 = tfm2
+#     m_fwd = crc_mul(m_fwd1, m_fwd2)
+#     m_bck = crc_mul(m_bck1, m_bck2)
+#     b = crc_add(crc_mul(b1, m_fwd2), b2)
+#     return (m_fwd, m_bck, b)
+#
+# def apply_fwd(tfm, b):
+#     m_fwd, _, b = tfm
+#     x = crc_mul(x, m_fwd)
+#     x ^= b
+#     return x
+#
+# def apply_bck(tfm, b):
+#     _, m_bck, b = tfm
+#     x ^= b
+#     x = crc_mul(x, m_bck)
+#     return x
 
 """
 Pickle wrapper -- convert an arbitrary object to a sequence of bytes
@@ -174,7 +178,7 @@ class TrackState:
 
         # Pickle remaining attributes, filtering out:
         #   - attributes starting with an underscore
-        #   - non-picklable cases (TODO)
+        #   - non-picklable cases
         for attr in sorted(self.__dict__.keys()):
             if attr[0] != '_':
                 attr_val = self.__dict__[attr]
@@ -293,30 +297,26 @@ class TestCrc32(unittest.TestCase):
         assert crc_mul(POLY_32, SHIFT_BCK_32) == 1
 
     def test_rev_bits(self):
-        assert rev_bits(1, 1) == 1
-        assert rev_bits(1, 2) == 2
-        assert rev_bits(3, 2) == 3
-        assert rev_bits(0, 4) == 0
-        assert rev_bits(3, 4) == 12
-        assert rev_bits(6, 4) == 6
-        assert rev_bits(10, 4) == 5
-
-    """
-    TODO: Failing unit tests
-    """
+        assert _rev_bits(1, 1) == 1
+        assert _rev_bits(1, 2) == 2
+        assert _rev_bits(3, 2) == 3
+        assert _rev_bits(0, 4) == 0
+        assert _rev_bits(3, 4) == 12
+        assert _rev_bits(6, 4) == 6
+        assert _rev_bits(10, 4) == 5
 
     def test_crc32_easy(self):
-        assert crc32(bytearray(b"")) == 0
-        assert crc32(bytearray(b"\xFF")) == 0xff000000
+        assert _real_crc32(bytearray(b"")) == 0
+        assert _real_crc32(bytearray(b"\xFF")) == 0xff000000
 
     def test_crc32_medium(self):
-        assert crc32(bytearray(b"\x00")) == 0xd202ef8d
-        assert crc32(bytearray(b"a")) == 0xe8b7be43
-        assert crc32(bytearray(b"abc")) == 0x352441c2
-        assert crc32(bytearray(b"cat")) == 0x9e5e43a8
+        assert _real_crc32(bytearray(b"\x00")) == 0xd202ef8d
+        assert _real_crc32(bytearray(b"a")) == 0xe8b7be43
+        assert _real_crc32(bytearray(b"abc")) == 0x352441c2
+        assert _real_crc32(bytearray(b"cat")) == 0x9e5e43a8
 
     def test_crc32_hard(self):
-        assert crc32(bytearray(b"a" * 100)) == 0xaf707a64
+        assert _real_crc32(bytearray(b"a" * 100)) == 0xaf707a64
 
 if __name__ == "__main__":
     # Run unit tests
