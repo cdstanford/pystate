@@ -8,6 +8,7 @@ It is used in the [FP4](https://github.com/eniac/FP4) project for fuzzing progra
 ## About
 
 The state tracking is *call-sensitive* in the sense that it incorporates the current call stack of all methods in the class, not just the instance attributes of the object. It is thus a more fine-grained approximation of the true state of the program than just hashing the values of the instance attributes.
+On the other hand, it introduces far less overhead than tracking the actual state (which may require $O(n)$ or worse snapshots per update), as state updates can be processed in $O(1)$ with CRC32.
 
 Local variables and line-specific state are currently unsupported.
 
