@@ -10,10 +10,6 @@ It is used in the [FP4](https://github.com/eniac/FP4) project for fuzzing progra
 The state tracking is *call-sensitive* in the sense that it incorporates the current call stack of all methods in the class, not just the instance attributes of the object. It is thus a more fine-grained approximation of the true state of the program than just hashing the values of the instance attributes.
 On the other hand, it introduces far less overhead than tracking the actual state (which may require $O(n)$ or worse snapshots per update), as state updates can be processed in $O(1)$ with CRC32.
 
-Local variables and line-specific state are currently unsupported.
-
-We use CRC32 because it can be updated conveniently when state changes. Note that since it's a 32-bit hash, it is not an exact representation. It's also not cryptographically secure and doesn't necessarily behave pseudorandomly.
-
 ## Dependencies
 
 This code works with both Python 3 (version 3.9.9) and Python 2 (version 2.7.18).
@@ -42,9 +38,12 @@ If you have any issues using pystate, bug reports, or feedback, please file an i
 
 ## Technical notes and limitations
 
-This module heavily relies on `pickle` and lifts some limitations from `pickle`.
+Since CRC32 is a 32-bit hash, it is not an exact representation. It's also not cryptographically secure and doesn't necessarily behave pseudorandomly, so is not appropriate for applications where strong unpredictability is needed.
+
+The current implementation heavily relies on `pickle` and lifts some limitations from `pickle`. Unpicklable attributes can be explicitly excluded from the state by prefixing with `_`, but unpicklable function arguments are not currently supported.
+
 The maintained CRC code is a hash of the following bytes, in order:
 1. All function calls on the stack (pickled triple of the function name, arguments, and keyword arguments)
 2. All attributes in the object not prefixed with `_`, and which are picklable
 
-Unpicklable attributes are thus supported (with a simple try-catch if the pickling fails), e.g. `threading.Lock()` but unpicklable function arguments are not. Any class with relevant attributes prefixed with `_` is also currently not supported.
+Other forms of state are not currently supported (e.g., local variables, line-specific control flow state, or external storage).
