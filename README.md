@@ -1,6 +1,9 @@
+# → [FP4](https://github.com/eniac/FP4)
+
 # pystate
 
-Demonstration of call-sensitive [CRC32](https://en.wikipedia.org/wiki/Cyclic_redundancy_check)-based state tracking for Python objects.
+Pystate is a call-sensitive [CRC32](https://en.wikipedia.org/wiki/Cyclic_redundancy_check)-based state tracker for Python objects.
+It is used in the [FP4](https://github.com/eniac/FP4) project for fuzzing programmable networks; specifically, to track and respond to changes in control-plane state.
 
 ## About
 
